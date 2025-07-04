@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,15 +16,85 @@
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: #333;
+            color: #2c3e50;
             line-height: 1.6;
             min-height: 100vh;
         }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
 
         .dashboard-container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+
+        header p {
+            margin: 10px 0 0;
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        nav {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 0;
+            margin-bottom: 30px;
+        }
+
+        nav ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            margin: 0;
+        }
+
+        nav ul li {
+            margin: 0 15px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: #2c3e50;
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        nav ul li a:hover {
+            background-color: #f0f2f5;
+            color: #667eea;
+        }
+
+        nav ul li a.active {
+            background-color: #667eea;
+            color: white;
         }
 
         .header {
@@ -70,7 +141,8 @@
             font-weight: 600;
         }
 
-        .year-filter:hover, .year-filter.active {
+        .year-filter:hover,
+        .year-filter.active {
             background: #764ba2;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
@@ -134,9 +206,17 @@
             font-weight: 500;
         }
 
-        .positive { color: #27ae60; }
-        .negative { color: #e74c3c; }
-        .neutral { color: #7f8c8d; }
+        .positive {
+            color: #27ae60;
+        }
+
+        .negative {
+            color: #e74c3c;
+        }
+
+        .neutral {
+            color: #7f8c8d;
+        }
 
         .trend-indicator {
             margin-right: 5px;
@@ -172,19 +252,19 @@
             .dashboard-container {
                 padding: 15px;
             }
-            
+
             .header h1 {
                 font-size: 2em;
             }
-            
+
             .header h2 {
                 font-size: 1.4em;
             }
-            
+
             .controls {
                 gap: 10px;
             }
-            
+
             .year-filter {
                 padding: 10px 20px;
                 font-size: 14px;
@@ -192,13 +272,31 @@
         }
     </style>
 </head>
+
 <body>
+    <header>
+        <div class="container">
+            <h1>Phoenix Foods Corp</h1>
+            <p>5-Year Financial Analysis & Strategic Recommendations</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="kpi_dashboard.html" class="active">KPI Dashboard</a></li>
+                <li><a href="analysis.html">Financial Analysis</a></li>
+            </ul>
+        </div>
+    </nav>
+
     <div class="dashboard-container">
         <div class="header">
             <h1>Phoenix Foods Corporation</h1>
             <h2>Financial Performance Dashboard</h2>
             <p>Comprehensive KPI Analysis | 5-Year Financial Overview</p>
-            
+
             <div class="controls">
                 <button class="year-filter active" data-year="2024">2024</button>
                 <button class="year-filter" data-year="2023">2023</button>
@@ -603,10 +701,10 @@
 
         function getChangeIndicator(current, previous) {
             if (!previous) return { text: 'N/A', class: 'neutral', icon: '📊' };
-            
+
             const change = ((current - previous) / Math.abs(previous)) * 100;
             if (Math.abs(change) < 0.1) return { text: 'Stable', class: 'neutral', icon: '📊' };
-            
+
             return {
                 text: `${change > 0 ? '+' : ''}${change.toFixed(1)}% YoY`,
                 class: change > 0 ? 'positive' : 'negative',
@@ -621,14 +719,14 @@
 
             // ROE
             document.getElementById('roe-value').textContent = formatPercentage(kpis.roe);
-            const roeChange = year === 'all' ? 
+            const roeChange = year === 'all' ?
                 { text: '5-Year CAGR: +12.4%', class: 'positive', icon: '📈' } :
                 getChangeIndicator(kpis.roe, prevKpis?.roe);
             document.getElementById('roe-change').innerHTML = `<span class="trend-indicator">${roeChange.icon}</span><span class="${roeChange.class}">${roeChange.text}</span>`;
 
             // Current Ratio
             document.getElementById('current-ratio-value').textContent = kpis.currentRatio.toFixed(2);
-            const crChange = year === 'all' ? 
+            const crChange = year === 'all' ?
                 { text: '5-Year Avg: 1.45', class: 'neutral', icon: '📊' } :
                 getChangeIndicator(kpis.currentRatio, prevKpis?.currentRatio);
             document.getElementById('current-ratio-change').innerHTML = `<span class="trend-indicator">${crChange.icon}</span><span class="${crChange.class}">${crChange.text}</span>`;
@@ -659,7 +757,7 @@
 
         function updateTrendsChart() {
             const ctx = document.getElementById('trendsChart').getContext('2d');
-            
+
             if (window.trendsChart && typeof window.trendsChart.destroy === 'function') {
                 window.trendsChart.destroy();
             }
@@ -728,7 +826,7 @@
 
         function updateSegmentChart() {
             const ctx = document.getElementById('segmentChart').getContext('2d');
-            
+
             if (window.segmentChart && typeof window.segmentChart.destroy === 'function') {
                 window.segmentChart.destroy();
             }
@@ -762,7 +860,7 @@
                     plugins: {
                         tooltip: {
                             callbacks: {
-                                label: function(context) {
+                                label: function (context) {
                                     const value = context.parsed;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = ((value / total) * 100).toFixed(1);
@@ -777,10 +875,10 @@
 
         // Event listeners
         document.querySelectorAll('.year-filter').forEach(button => {
-            button.addEventListener('click', function() {
+            button.addEventListener('click', function () {
                 document.querySelectorAll('.year-filter').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
-                
+
                 const year = this.dataset.year;
                 if (year === 'all') {
                     updateKPICards('all');
@@ -794,7 +892,7 @@
         });
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             setTimeout(() => {
                 updateKPICards(currentYear);
                 updateCharts();
@@ -802,4 +900,5 @@
         });
     </script>
 </body>
+
 </html>
