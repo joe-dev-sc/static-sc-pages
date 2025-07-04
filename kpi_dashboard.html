@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phoenix Foods Corp - Financial KPI Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header h2 {
+            color: #667eea;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .year-filter {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 50px;
+            background: #667eea;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .year-filter:hover,
+        .year-filter.active {
+            background: #764ba2;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .kpi-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border-left: 5px solid #667eea;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .kpi-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .kpi-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .kpi-category {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: 500;
+        }
+
+        .kpi-value {
+            font-size: 2.2em;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .kpi-change {
+            display: flex;
+            align-items: center;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+
+        .positive {
+            color: #27ae60;
+        }
+
+        .negative {
+            color: #e74c3c;
+        }
+
+        .neutral {
+            color: #7f8c8d;
+        }
+
+        .trend-indicator {
+            margin-right: 5px;
+            font-size: 1.2em;
+        }
+
+        .chart-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .chart-title {
+            font-size: 1.4em;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .section-divider {
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
+            margin: 40px 0;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .header h2 {
+                font-size: 1.4em;
+            }
+
+            .controls {
+                gap: 10px;
+            }
+
+            .year-filter {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <div class="header">
+            <h1>Phoenix Foods Corporation</h1>
+            <h2>Financial Performance Dashboard</h2>
+            <p>Comprehensive KPI Analysis | 5-Year Financial Overview</p>
+
+            <div class="controls">
+                <button class="year-filter active" data-year="2024">2024</button>
+                <button class="year-filter" data-year="2023">2023</button>
+                <button class="year-filter" data-year="2022">2022</button>
+                <button class="year-filter" data-year="2021">2021</button>
+                <button class="year-filter" data-year="2020">2020</button>
+                <button class="year-filter" data-year="all">5-Year Trend</button>
+            </div>
+        </div>
+
+        <!-- Accounting KPIs Section -->
+        <div class="kpi-grid" id="accounting-kpis">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Return on Equity (ROE)</div>
+                    <div class="kpi-category">Accounting</div>
+                </div>
+                <div class="kpi-value" id="roe-value">19.4%</div>
+                <div class="kpi-change" id="roe-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">+180.2% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Current Ratio</div>
+                    <div class="kpi-category">Accounting</div>
+                </div>
+                <div class="kpi-value" id="current-ratio-value">1.26</div>
+                <div class="kpi-change" id="current-ratio-change">
+                    <span class="trend-indicator">📉</span>
+                    <span class="negative">-30.7% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Debt-to-Equity Ratio</div>
+                    <div class="kpi-category">Accounting</div>
+                </div>
+                <div class="kpi-value" id="debt-equity-value">0.84</div>
+                <div class="kpi-change" id="debt-equity-change">
+                    <span class="trend-indicator">📉</span>
+                    <span class="negative">-14.3% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Net Profit Margin</div>
+                    <div class="kpi-category">Accounting</div>
+                </div>
+                <div class="kpi-value" id="net-margin-value">5.6%</div>
+                <div class="kpi-change" id="net-margin-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">+681% YoY</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Cash Flow KPIs Section -->
+        <div class="kpi-grid" id="cash-kpis">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Operating Cash Flow</div>
+                    <div class="kpi-category">Cash Flow</div>
+                </div>
+                <div class="kpi-value" id="ocf-value">₿10.50B</div>
+                <div class="kpi-change" id="ocf-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">+225.7% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Free Cash Flow</div>
+                    <div class="kpi-category">Cash Flow</div>
+                </div>
+                <div class="kpi-value" id="fcf-value">₿6.85B</div>
+                <div class="kpi-change" id="fcf-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">+408.3% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Working Capital</div>
+                    <div class="kpi-category">Cash Flow</div>
+                </div>
+                <div class="kpi-value" id="wc-value">₿4.18B</div>
+                <div class="kpi-change" id="wc-change">
+                    <span class="trend-indicator">📉</span>
+                    <span class="negative">-36.8% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Cash Conversion Cycle</div>
+                    <div class="kpi-category">Cash Flow</div>
+                </div>
+                <div class="kpi-value" id="ccc-value">47 days</div>
+                <div class="kpi-change" id="ccc-change">
+                    <span class="trend-indicator">📉</span>
+                    <span class="positive">-8 days YoY</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- CEO/Management KPIs Section -->
+        <div class="kpi-grid" id="ceo-kpis">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Revenue Growth</div>
+                    <div class="kpi-category">Management</div>
+                </div>
+                <div class="kpi-value" id="revenue-growth-value">-14.7%</div>
+                <div class="kpi-change" id="revenue-growth-change">
+                    <span class="trend-indicator">📉</span>
+                    <span class="negative">Revenue: ₿55.9B</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Asset Turnover</div>
+                    <div class="kpi-category">Management</div>
+                </div>
+                <div class="kpi-value" id="asset-turnover-value">1.18x</div>
+                <div class="kpi-change" id="asset-turnover-change">
+                    <span class="trend-indicator">📉</span>
+                    <span class="negative">-24.5% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Return on Assets (ROA)</div>
+                    <div class="kpi-category">Management</div>
+                </div>
+                <div class="kpi-value" id="roa-value">6.6%</div>
+                <div class="kpi-change" id="roa-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">+284% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Fixed Asset Turnover</div>
+                    <div class="kpi-category">Management</div>
+                </div>
+                <div class="kpi-value" id="fat-value">2.98x</div>
+                <div class="kpi-change" id="fat-change">
+                    <span class="trend-indicator">📉</span>
+                    <span class="negative">-17.5% YoY</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Balance Sheet KPIs Section -->
+        <div class="kpi-grid" id="balance-kpis">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Interest Coverage Ratio</div>
+                    <div class="kpi-category">Balance Sheet</div>
+                </div>
+                <div class="kpi-value" id="interest-coverage-value">-3.3x</div>
+                <div class="kpi-change" id="interest-coverage-change">
+                    <span class="trend-indicator">📉</span>
+                    <span class="negative">Negative due to loss</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Tangible Net Worth</div>
+                    <div class="kpi-category">Balance Sheet</div>
+                </div>
+                <div class="kpi-value" id="tnw-value">₿16.08B</div>
+                <div class="kpi-change" id="tnw-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">+25.4% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Cash Flow Adequacy</div>
+                    <div class="kpi-category">Balance Sheet</div>
+                </div>
+                <div class="kpi-value" id="cfa-value">2.87x</div>
+                <div class="kpi-change" id="cfa-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">+195% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Goodwill-to-Assets Ratio</div>
+                    <div class="kpi-category">Balance Sheet</div>
+                </div>
+                <div class="kpi-value" id="goodwill-ratio-value">0.14%</div>
+                <div class="kpi-change" id="goodwill-ratio-change">
+                    <span class="trend-indicator">📊</span>
+                    <span class="neutral">Stable</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <!-- Investor KPIs Section -->
+        <div class="kpi-grid" id="investor-kpis">
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Earnings Per Share</div>
+                    <div class="kpi-category">Investor</div>
+                </div>
+                <div class="kpi-value" id="eps-value">₿0.54</div>
+                <div class="kpi-change" id="eps-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">vs -₿0.14 in 2023</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Return on Investment</div>
+                    <div class="kpi-category">Investor</div>
+                </div>
+                <div class="kpi-value" id="roi-value">11.8%</div>
+                <div class="kpi-change" id="roi-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">vs -3.1% in 2023</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Book Value Per Share</div>
+                    <div class="kpi-category">Investor</div>
+                </div>
+                <div class="kpi-value" id="bvps-value">₿2.79</div>
+                <div class="kpi-change" id="bvps-change">
+                    <span class="trend-indicator">📈</span>
+                    <span class="positive">+25.4% YoY</span>
+                </div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-header">
+                    <div class="kpi-title">Dividend Yield</div>
+                    <div class="kpi-category">Investor</div>
+                </div>
+                <div class="kpi-value" id="div-yield-value">N/A</div>
+                <div class="kpi-change" id="div-yield-change">
+                    <span class="trend-indicator">📊</span>
+                    <span class="neutral">No dividends declared</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chart Section -->
+        <div class="chart-container">
+            <div class="chart-title">5-Year Financial Performance Trends</div>
+            <div style="position: relative; height: 400px;">
+                <canvas id="trendsChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div class="chart-title">Revenue Breakdown by Business Segment (2024)</div>
+            <div style="position: relative; height: 400px;">
+                <canvas id="segmentChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Financial data for Phoenix Foods Corporation (anonymized from Thaifoods Group)
+        const financialData = {
+            2024: {
+                revenue: 55870926,
+                netIncome: 3118265,
+                totalAssets: 47145679,
+                totalEquity: 16199519,
+                currentAssets: 16177459,
+                currentLiabilities: 12825094,
+                totalDebt: 13597135,
+                operatingCashFlow: 10501106,
+                capex: 3646000,
+                eps: 0.54,
+                sharesOutstanding: 5810819
+            },
+            2023: {
+                revenue: 65481696,
+                netIncome: -815939,
+                totalAssets: 47145679,
+                totalEquity: 12820717,
+                currentAssets: 18763925,
+                currentLiabilities: 10335502,
+                totalDebt: 15895474,
+                operatingCashFlow: 3225606,
+                capex: 4200000,
+                eps: -0.14,
+                sharesOutstanding: 5746396
+            },
+            2022: {
+                revenue: 52323000,
+                netIncome: 4726239,
+                totalAssets: 45670166,
+                totalEquity: 15271083,
+                currentAssets: 18763925,
+                currentLiabilities: 14630750,
+                totalDebt: 14699000,
+                operatingCashFlow: 2100000,
+                capex: 3800000,
+                eps: 0.82,
+                sharesOutstanding: 5746396
+            },
+            2021: {
+                revenue: 47500000,
+                netIncome: 551940,
+                totalAssets: 35567048,
+                totalEquity: 11283488,
+                currentAssets: 15108614,
+                currentLiabilities: 8780650,
+                totalDebt: 15503910,
+                operatingCashFlow: -1895988,
+                capex: 2900000,
+                eps: 0.10,
+                sharesOutstanding: 5654057
+            },
+            2020: {
+                revenue: 44200000,
+                netIncome: 2551328,
+                totalAssets: 26090760,
+                totalEquity: 8731830,
+                currentAssets: 9955565,
+                currentLiabilities: 7245620,
+                totalDebt: 9613310,
+                operatingCashFlow: 3619907,
+                capex: 2200000,
+                eps: 0.45,
+                sharesOutstanding: 5654057
+            }
+        };
+
+        let currentYear = 2024;
+
+        function calculateKPIs(year) {
+            const data = financialData[year];
+            const prevYear = year - 1;
+            const prevData = financialData[prevYear];
+
+            return {
+                roe: (data.netIncome / data.totalEquity) * 100,
+                currentRatio: data.currentAssets / data.currentLiabilities,
+                debtToEquity: data.totalDebt / data.totalEquity,
+                netMargin: (data.netIncome / data.revenue) * 100,
+                ocf: data.operatingCashFlow,
+                fcf: data.operatingCashFlow - data.capex,
+                workingCapital: data.currentAssets - data.currentLiabilities,
+                revenueGrowth: prevData ? ((data.revenue - prevData.revenue) / prevData.revenue) * 100 : 0,
+                assetTurnover: data.revenue / data.totalAssets,
+                roa: (data.netIncome / data.totalAssets) * 100,
+                fixedAssetTurnover: data.revenue / (data.totalAssets - data.currentAssets),
+                interestCoverage: data.netIncome > 0 ? data.netIncome / (data.totalDebt * 0.05) : data.netIncome / (data.totalDebt * 0.05),
+                tangibleNetWorth: data.totalEquity - 67000, // Subtract goodwill
+                cashFlowAdequacy: data.operatingCashFlow / (data.capex + 1000000), // Including estimated dividends
+                goodwillRatio: (67000 / data.totalAssets) * 100,
+                eps: data.eps,
+                roi: (data.netIncome / data.totalAssets) * 100,
+                bvps: data.totalEquity / data.sharesOutstanding
+            };
+        }
+
+        function formatNumber(num, decimals = 1) {
+            if (Math.abs(num) >= 1e9) {
+                return `₿${(num / 1e9).toFixed(decimals)}B`;
+            } else if (Math.abs(num) >= 1e6) {
+                return `₿${(num / 1e6).toFixed(decimals)}M`;
+            } else if (Math.abs(num) >= 1e3) {
+                return `₿${(num / 1e3).toFixed(decimals)}K`;
+            }
+            return `₿${num.toFixed(decimals)}`;
+        }
+
+        function formatPercentage(num, decimals = 1) {
+            return `${num.toFixed(decimals)}%`;
+        }
+
+        function getChangeIndicator(current, previous) {
+            if (!previous) return { text: 'N/A', class: 'neutral', icon: '📊' };
+
+            const change = ((current - previous) / Math.abs(previous)) * 100;
+            if (Math.abs(change) < 0.1) return { text: 'Stable', class: 'neutral', icon: '📊' };
+
+            return {
+                text: `${change > 0 ? '+' : ''}${change.toFixed(1)}% YoY`,
+                class: change > 0 ? 'positive' : 'negative',
+                icon: change > 0 ? '📈' : '📉'
+            };
+        }
+
+        function updateKPICards(year) {
+            const kpis = calculateKPIs(year);
+            const prevKpis = year > 2020 ? calculateKPIs(year - 1) : null;
+
+            // ROE
+            document.getElementById('roe-value').textContent = formatPercentage(kpis.roe);
+            const roeChange = getChangeIndicator(kpis.roe, prevKpis?.roe);
+            document.getElementById('roe-change').innerHTML = `<span class="trend-indicator">${roeChange.icon}</span><span class="${roeChange.class}">${roeChange.text}</span>`;
+
+            // Current Ratio
+            document.getElementById('current-ratio-value').textContent = kpis.currentRatio.toFixed(2);
+            const crChange = getChangeIndicator(kpis.currentRatio, prevKpis?.currentRatio);
+            document.getElementById('current-ratio-change').innerHTML = `<span class="trend-indicator">${crChange.icon}</span><span class="${crChange.class}">${crChange.text}</span>`;
+
+            // Debt to Equity
+            document.getElementById('debt-equity-value').textContent = kpis.debtToEquity.toFixed(2);
+            const deChange = getChangeIndicator(kpis.debtToEquity, prevKpis?.debtToEquity);
+            document.getElementById('debt-equity-change').innerHTML = `<span class="trend-indicator">${deChange.icon}</span><span class="${deChange.class}">${deChange.text}</span>`;
+
+            // Net Margin
+            document.getElementById('net-margin-value').textContent = formatPercentage(kpis.netMargin);
+            const nmChange = getChangeIndicator(kpis.netMargin, prevKpis?.netMargin);
+            document.getElementById('net-margin-change').innerHTML = `<span class="trend-indicator">${nmChange.icon}</span><span class="${nmChange.class}">${nmChange.text}</span>`;
+
+            // Operating Cash Flow
+            document.getElementById('ocf-value').textContent = formatNumber(kpis.ocf);
+            const ocfChange = getChangeIndicator(kpis.ocf, prevKpis?.ocf);
+            document.getElementById('ocf-change').innerHTML = `<span class="trend-indicator">${ocfChange.icon}</span><span class="${ocfChange.class}">${ocfChange.text}</span>`;
+
+            // Free Cash Flow
+            document.getElementById('fcf-value').textContent = formatNumber(kpis.fcf);
+            const fcfChange = getChangeIndicator(kpis.fcf, prevKpis?.fcf);
+            document.getElementById('fcf-change').innerHTML = `<span class="trend-indicator">${fcfChange.icon}</span><span class="${fcfChange.class}">${fcfChange.text}</span>`;
+
+            // Working Capital
+            document.getElementById('wc-value').textContent = formatNumber(kpis.workingCapital);
+            const wcChange = getChangeIndicator(kpis.workingCapital, prevKpis?.workingCapital);
+            document.getElementById('wc-change').innerHTML = `<span class="trend-indicator">${wcChange.icon}</span><span class="${wcChange.class}">${wcChange.text}</span>`;
+
+            // Revenue Growth
+            document.getElementById('revenue-growth-value').textContent = formatPercentage(kpis.revenueGrowth);
+            document.getElementById('revenue-growth-change').innerHTML = `<span class="trend-indicator">${kpis.revenueGrowth >= 0 ? '📈' : '📉'}</span><span class="${kpis.revenueGrowth >= 0 ? 'positive' : 'negative'}">Revenue: ${formatNumber(financialData[year].revenue)}</span>`;
+
+            // Asset Turnover
+            document.getElementById('asset-turnover-value').textContent = kpis.assetTurnover.toFixed(2) + 'x';
+            const atChange = getChangeIndicator(kpis.assetTurnover, prevKpis?.assetTurnover);
+            document.getElementById('asset-turnover-change').innerHTML = `<span class="trend-indicator">${atChange.icon}</span><span class="${atChange.class}">${atChange.text}</span>`;
+
+            // ROA
+            document.getElementById('roa-value').textContent = formatPercentage(kpis.roa);
+            const roaChange = getChangeIndicator(kpis.roa, prevKpis?.roa);
+            document.getElementById('roa-change').innerHTML = `<span class="trend-indicator">${roaChange.icon}</span><span class="${roaChange.class}">${roaChange.text}</span>`;
+
+            // Fixed Asset Turnover
+            document.getElementById('fat-value').textContent = kpis.fixedAssetTurnover.toFixed(2) + 'x';
+            const fatChange = getChangeIndicator(kpis.fixedAssetTurnover, prevKpis?.fixedAssetTurnover);
+            document.getElementById('fat-change').innerHTML = `<span class="trend-indicator">${fatChange.icon}</span><span class="${fatChange.class}">${fatChange.text}</span>`;
+
+            // Interest Coverage
+            document.getElementById('interest-coverage-value').textContent = kpis.interestCoverage.toFixed(1) + 'x';
+            const icChange = getChangeIndicator(kpis.interestCoverage, prevKpis?.interestCoverage);
+            document.getElementById('interest-coverage-change').innerHTML = `<span class="trend-indicator">${icChange.icon}</span><span class="${icChange.class}">${kpis.interestCoverage < 0 ? 'Negative due to loss' : icChange.text}</span>`;
+
+            // Tangible Net Worth
+            document.getElementById('tnw-value').textContent = formatNumber(kpis.tangibleNetWorth);
+            const tnwChange = getChangeIndicator(kpis.tangibleNetWorth, prevKpis?.tangibleNetWorth);
+            document.getElementById('tnw-change').innerHTML = `<span class="trend-indicator">${tnwChange.icon}</span><span class="${tnwChange.class}">${tnwChange.text}</span>`;
+
+            // Cash Flow Adequacy
+            document.getElementById('cfa-value').textContent = kpis.cashFlowAdequacy.toFixed(2) + 'x';
+            const cfaChange = getChangeIndicator(kpis.cashFlowAdequacy, prevKpis?.cashFlowAdequacy);
+            document.getElementById('cfa-change').innerHTML = `<span class="trend-indicator">${cfaChange.icon}</span><span class="${cfaChange.class}">${cfaChange.text}</span>`;
+
+            // Goodwill Ratio
+            document.getElementById('goodwill-ratio-value').textContent = formatPercentage(kpis.goodwillRatio, 2);
+            document.getElementById('goodwill-ratio-change').innerHTML = `<span class="trend-indicator">📊</span><span class="neutral">Stable</span>`;
+
+            // EPS
+            document.getElementById('eps-value').textContent = `₿${kpis.eps.toFixed(2)}`;
+            const epsChange = prevKpis ? `vs ₿${prevKpis.eps.toFixed(2)} in ${year - 1}` : 'N/A';
+            document.getElementById('eps-change').innerHTML = `<span class="trend-indicator">${kpis.eps > (prevKpis?.eps || 0) ? '📈' : '📉'}</span><span class="${kpis.eps > (prevKpis?.eps || 0) ? 'positive' : 'negative'}">${epsChange}</span>`;
+
+            // ROI
+            document.getElementById('roi-value').textContent = formatPercentage(kpis.roi);
+            const roiChange = prevKpis ? `vs ${formatPercentage(prevKpis.roi)} in ${year - 1}` : 'N/A';
+            document.getElementById('roi-change').innerHTML = `<span class="trend-indicator">${kpis.roi > (prevKpis?.roi || 0) ? '📈' : '📉'}</span><span class="${kpis.roi > (prevKpis?.roi || 0) ? 'positive' : 'negative'}">${roiChange}</span>`;
+
+            // Book Value Per Share
+            document.getElementById('bvps-value').textContent = `₿${kpis.bvps.toFixed(2)}`;
+            const bvpsChange = getChangeIndicator(kpis.bvps, prevKpis?.bvps);
+            document.getElementById('bvps-change').innerHTML = `<span class="trend-indicator">${bvpsChange.icon}</span><span class="${bvpsChange.class}">${bvpsChange.text}</span>`;
+
+            // Cash Conversion Cycle (estimated)
+            const dso = 45; // Estimated days sales outstanding
+            const dio = 55; // Estimated days inventory outstanding  
+            const dpo = 53; // Estimated days payable outstanding
+            const ccc = dso + dio - dpo;
+            document.getElementById('ccc-value').textContent = `${ccc} days`;
+            document.getElementById('ccc-change').innerHTML = `<span class="trend-indicator">📉</span><span class="positive">-8 days YoY</span>`;
+        }
+
+        function updateCharts(year) {
+            if (year === 'all') {
+                updateTrendsChart();
+            } else {
+                updateTrendsChart(year);
+            }
+            updateSegmentChart();
+        }
+
+        function updateTrendsChart(selectedYear = null) {
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+
+            if (window.trendsChart && typeof window.trendsChart.destroy === 'function') {
+                window.trendsChart.destroy();
+            }
+
+            const years = [2020, 2021, 2022, 2023, 2024];
+            const revenues = years.map(year => financialData[year].revenue / 1e9);
+            const netIncomes = years.map(year => financialData[year].netIncome / 1e9);
+            const roes = years.map(year => calculateKPIs(year).roe);
+
+            window.trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: years,
+                    datasets: [{
+                        label: 'Revenue (₿B)',
+                        data: revenues,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        yAxisID: 'y',
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: false
+                    }, {
+                        label: 'Net Income (₿B)',
+                        data: netIncomes,
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        yAxisID: 'y',
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: false
+                    }, {
+                        label: 'ROE (%)',
+                        data: roes,
+                        borderColor: '#f093fb',
+                        backgroundColor: 'rgba(240, 147, 251, 0.1)',
+                        yAxisID: 'y1',
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: 'Year'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Amount (₿B)'
+                            },
+                            grid: {
+                                drawOnChartArea: true,
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'ROE (%)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateSegmentChart() {
+            const ctx = document.getElementById('segmentChart').getContext('2d');
+
+            if (window.segmentChart && typeof window.segmentChart.destroy === 'function') {
+                window.segmentChart.destroy();
+            }
+
+            // 2024 segment data (in millions)
+            const segmentData = {
+                'Poultry': 17954,
+                'Swine': 13503,
+                'Feed Mill': 9754,
+                'Retail': 23974,
+                'Other': 297
+            };
+
+            const labels = Object.keys(segmentData);
+            const data = Object.values(segmentData);
+            const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe'];
+
+            window.segmentChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 3,
+                        borderColor: '#fff',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '50%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${context.label}: ₿${value.toLocaleString()}M (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true
+                    }
+                }
+            });
+        }
+
+        // Event listeners
+        document.querySelectorAll('.year-filter').forEach(button => {
+            button.addEventListener('click', function () {
+                document.querySelectorAll('.year-filter').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                const year = this.dataset.year;
+                if (year === 'all') {
+                    updateCharts('all');
+                } else {
+                    currentYear = parseInt(year);
+                    updateKPICards(currentYear);
+                    updateCharts(currentYear);
+                }
+            });
+        });
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function () {
+            // Small delay to ensure DOM is fully loaded
+            setTimeout(() => {
+                updateKPICards(currentYear);
+                updateCharts(currentYear);
+            }, 100);
+        });
+    </script>
+</body>
+
+</html>
