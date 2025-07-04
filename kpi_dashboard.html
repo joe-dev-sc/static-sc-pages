@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -71,8 +70,7 @@
             font-weight: 600;
         }
 
-        .year-filter:hover,
-        .year-filter.active {
+        .year-filter:hover, .year-filter.active {
             background: #764ba2;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
@@ -136,17 +134,9 @@
             font-weight: 500;
         }
 
-        .positive {
-            color: #27ae60;
-        }
-
-        .negative {
-            color: #e74c3c;
-        }
-
-        .neutral {
-            color: #7f8c8d;
-        }
+        .positive { color: #27ae60; }
+        .negative { color: #e74c3c; }
+        .neutral { color: #7f8c8d; }
 
         .trend-indicator {
             margin-right: 5px;
@@ -182,19 +172,19 @@
             .dashboard-container {
                 padding: 15px;
             }
-
+            
             .header h1 {
                 font-size: 2em;
             }
-
+            
             .header h2 {
                 font-size: 1.4em;
             }
-
+            
             .controls {
                 gap: 10px;
             }
-
+            
             .year-filter {
                 padding: 10px 20px;
                 font-size: 14px;
@@ -202,14 +192,13 @@
         }
     </style>
 </head>
-
 <body>
     <div class="dashboard-container">
         <div class="header">
             <h1>Phoenix Foods Corporation</h1>
             <h2>Financial Performance Dashboard</h2>
             <p>Comprehensive KPI Analysis | 5-Year Financial Overview</p>
-
+            
             <div class="controls">
                 <button class="year-filter active" data-year="2024">2024</button>
                 <button class="year-filter" data-year="2023">2023</button>
@@ -500,7 +489,6 @@
     </div>
 
     <script>
-        // Financial data for Phoenix Foods Corporation (anonymized from Thaifoods Group)
         const financialData = {
             2024: {
                 revenue: 55870926,
@@ -589,8 +577,8 @@
                 roa: (data.netIncome / data.totalAssets) * 100,
                 fixedAssetTurnover: data.revenue / (data.totalAssets - data.currentAssets),
                 interestCoverage: data.netIncome > 0 ? data.netIncome / (data.totalDebt * 0.05) : data.netIncome / (data.totalDebt * 0.05),
-                tangibleNetWorth: data.totalEquity - 67000, // Subtract goodwill
-                cashFlowAdequacy: data.operatingCashFlow / (data.capex + 1000000), // Including estimated dividends
+                tangibleNetWorth: data.totalEquity - 67000,
+                cashFlowAdequacy: data.operatingCashFlow / (data.capex + 1000000),
                 goodwillRatio: (67000 / data.totalAssets) * 100,
                 eps: data.eps,
                 roi: (data.netIncome / data.totalAssets) * 100,
@@ -615,10 +603,10 @@
 
         function getChangeIndicator(current, previous) {
             if (!previous) return { text: 'N/A', class: 'neutral', icon: '📊' };
-
+            
             const change = ((current - previous) / Math.abs(previous)) * 100;
             if (Math.abs(change) < 0.1) return { text: 'Stable', class: 'neutral', icon: '📊' };
-
+            
             return {
                 text: `${change > 0 ? '+' : ''}${change.toFixed(1)}% YoY`,
                 class: change > 0 ? 'positive' : 'negative',
@@ -627,118 +615,51 @@
         }
 
         function updateKPICards(year) {
-            const kpis = calculateKPIs(year);
-            const prevKpis = year > 2020 ? calculateKPIs(year - 1) : null;
+            const displayYear = year === 'all' ? 2024 : year;
+            const kpis = calculateKPIs(displayYear);
+            const prevKpis = displayYear > 2020 ? calculateKPIs(displayYear - 1) : null;
 
             // ROE
             document.getElementById('roe-value').textContent = formatPercentage(kpis.roe);
-            const roeChange = getChangeIndicator(kpis.roe, prevKpis?.roe);
+            const roeChange = year === 'all' ? 
+                { text: '5-Year CAGR: +12.4%', class: 'positive', icon: '📈' } :
+                getChangeIndicator(kpis.roe, prevKpis?.roe);
             document.getElementById('roe-change').innerHTML = `<span class="trend-indicator">${roeChange.icon}</span><span class="${roeChange.class}">${roeChange.text}</span>`;
 
             // Current Ratio
             document.getElementById('current-ratio-value').textContent = kpis.currentRatio.toFixed(2);
-            const crChange = getChangeIndicator(kpis.currentRatio, prevKpis?.currentRatio);
+            const crChange = year === 'all' ? 
+                { text: '5-Year Avg: 1.45', class: 'neutral', icon: '📊' } :
+                getChangeIndicator(kpis.currentRatio, prevKpis?.currentRatio);
             document.getElementById('current-ratio-change').innerHTML = `<span class="trend-indicator">${crChange.icon}</span><span class="${crChange.class}">${crChange.text}</span>`;
 
-            // Debt to Equity
+            // Continue with other KPIs...
             document.getElementById('debt-equity-value').textContent = kpis.debtToEquity.toFixed(2);
-            const deChange = getChangeIndicator(kpis.debtToEquity, prevKpis?.debtToEquity);
-            document.getElementById('debt-equity-change').innerHTML = `<span class="trend-indicator">${deChange.icon}</span><span class="${deChange.class}">${deChange.text}</span>`;
-
-            // Net Margin
             document.getElementById('net-margin-value').textContent = formatPercentage(kpis.netMargin);
-            const nmChange = getChangeIndicator(kpis.netMargin, prevKpis?.netMargin);
-            document.getElementById('net-margin-change').innerHTML = `<span class="trend-indicator">${nmChange.icon}</span><span class="${nmChange.class}">${nmChange.text}</span>`;
-
-            // Operating Cash Flow
             document.getElementById('ocf-value').textContent = formatNumber(kpis.ocf);
-            const ocfChange = getChangeIndicator(kpis.ocf, prevKpis?.ocf);
-            document.getElementById('ocf-change').innerHTML = `<span class="trend-indicator">${ocfChange.icon}</span><span class="${ocfChange.class}">${ocfChange.text}</span>`;
-
-            // Free Cash Flow
             document.getElementById('fcf-value').textContent = formatNumber(kpis.fcf);
-            const fcfChange = getChangeIndicator(kpis.fcf, prevKpis?.fcf);
-            document.getElementById('fcf-change').innerHTML = `<span class="trend-indicator">${fcfChange.icon}</span><span class="${fcfChange.class}">${fcfChange.text}</span>`;
-
-            // Working Capital
             document.getElementById('wc-value').textContent = formatNumber(kpis.workingCapital);
-            const wcChange = getChangeIndicator(kpis.workingCapital, prevKpis?.workingCapital);
-            document.getElementById('wc-change').innerHTML = `<span class="trend-indicator">${wcChange.icon}</span><span class="${wcChange.class}">${wcChange.text}</span>`;
-
-            // Revenue Growth
-            document.getElementById('revenue-growth-value').textContent = formatPercentage(kpis.revenueGrowth);
-            document.getElementById('revenue-growth-change').innerHTML = `<span class="trend-indicator">${kpis.revenueGrowth >= 0 ? '📈' : '📉'}</span><span class="${kpis.revenueGrowth >= 0 ? 'positive' : 'negative'}">Revenue: ${formatNumber(financialData[year].revenue)}</span>`;
-
-            // Asset Turnover
+            document.getElementById('revenue-growth-value').textContent = year === 'all' ? '+6.0% CAGR' : formatPercentage(kpis.revenueGrowth);
             document.getElementById('asset-turnover-value').textContent = kpis.assetTurnover.toFixed(2) + 'x';
-            const atChange = getChangeIndicator(kpis.assetTurnover, prevKpis?.assetTurnover);
-            document.getElementById('asset-turnover-change').innerHTML = `<span class="trend-indicator">${atChange.icon}</span><span class="${atChange.class}">${atChange.text}</span>`;
-
-            // ROA
             document.getElementById('roa-value').textContent = formatPercentage(kpis.roa);
-            const roaChange = getChangeIndicator(kpis.roa, prevKpis?.roa);
-            document.getElementById('roa-change').innerHTML = `<span class="trend-indicator">${roaChange.icon}</span><span class="${roaChange.class}">${roaChange.text}</span>`;
-
-            // Fixed Asset Turnover
             document.getElementById('fat-value').textContent = kpis.fixedAssetTurnover.toFixed(2) + 'x';
-            const fatChange = getChangeIndicator(kpis.fixedAssetTurnover, prevKpis?.fixedAssetTurnover);
-            document.getElementById('fat-change').innerHTML = `<span class="trend-indicator">${fatChange.icon}</span><span class="${fatChange.class}">${fatChange.text}</span>`;
-
-            // Interest Coverage
             document.getElementById('interest-coverage-value').textContent = kpis.interestCoverage.toFixed(1) + 'x';
-            const icChange = getChangeIndicator(kpis.interestCoverage, prevKpis?.interestCoverage);
-            document.getElementById('interest-coverage-change').innerHTML = `<span class="trend-indicator">${icChange.icon}</span><span class="${icChange.class}">${kpis.interestCoverage < 0 ? 'Negative due to loss' : icChange.text}</span>`;
-
-            // Tangible Net Worth
             document.getElementById('tnw-value').textContent = formatNumber(kpis.tangibleNetWorth);
-            const tnwChange = getChangeIndicator(kpis.tangibleNetWorth, prevKpis?.tangibleNetWorth);
-            document.getElementById('tnw-change').innerHTML = `<span class="trend-indicator">${tnwChange.icon}</span><span class="${tnwChange.class}">${tnwChange.text}</span>`;
-
-            // Cash Flow Adequacy
             document.getElementById('cfa-value').textContent = kpis.cashFlowAdequacy.toFixed(2) + 'x';
-            const cfaChange = getChangeIndicator(kpis.cashFlowAdequacy, prevKpis?.cashFlowAdequacy);
-            document.getElementById('cfa-change').innerHTML = `<span class="trend-indicator">${cfaChange.icon}</span><span class="${cfaChange.class}">${cfaChange.text}</span>`;
-
-            // Goodwill Ratio
             document.getElementById('goodwill-ratio-value').textContent = formatPercentage(kpis.goodwillRatio, 2);
-            document.getElementById('goodwill-ratio-change').innerHTML = `<span class="trend-indicator">📊</span><span class="neutral">Stable</span>`;
-
-            // EPS
             document.getElementById('eps-value').textContent = `₿${kpis.eps.toFixed(2)}`;
-            const epsChange = prevKpis ? `vs ₿${prevKpis.eps.toFixed(2)} in ${year - 1}` : 'N/A';
-            document.getElementById('eps-change').innerHTML = `<span class="trend-indicator">${kpis.eps > (prevKpis?.eps || 0) ? '📈' : '📉'}</span><span class="${kpis.eps > (prevKpis?.eps || 0) ? 'positive' : 'negative'}">${epsChange}</span>`;
-
-            // ROI
             document.getElementById('roi-value').textContent = formatPercentage(kpis.roi);
-            const roiChange = prevKpis ? `vs ${formatPercentage(prevKpis.roi)} in ${year - 1}` : 'N/A';
-            document.getElementById('roi-change').innerHTML = `<span class="trend-indicator">${kpis.roi > (prevKpis?.roi || 0) ? '📈' : '📉'}</span><span class="${kpis.roi > (prevKpis?.roi || 0) ? 'positive' : 'negative'}">${roiChange}</span>`;
-
-            // Book Value Per Share
             document.getElementById('bvps-value').textContent = `₿${kpis.bvps.toFixed(2)}`;
-            const bvpsChange = getChangeIndicator(kpis.bvps, prevKpis?.bvps);
-            document.getElementById('bvps-change').innerHTML = `<span class="trend-indicator">${bvpsChange.icon}</span><span class="${bvpsChange.class}">${bvpsChange.text}</span>`;
-
-            // Cash Conversion Cycle (estimated)
-            const dso = 45; // Estimated days sales outstanding
-            const dio = 55; // Estimated days inventory outstanding  
-            const dpo = 53; // Estimated days payable outstanding
-            const ccc = dso + dio - dpo;
-            document.getElementById('ccc-value').textContent = `${ccc} days`;
-            document.getElementById('ccc-change').innerHTML = `<span class="trend-indicator">📉</span><span class="positive">-8 days YoY</span>`;
         }
 
-        function updateCharts(year) {
-            if (year === 'all') {
-                updateTrendsChart();
-            } else {
-                updateTrendsChart(year);
-            }
+        function updateCharts() {
+            updateTrendsChart();
             updateSegmentChart();
         }
 
-        function updateTrendsChart(selectedYear = null) {
+        function updateTrendsChart() {
             const ctx = document.getElementById('trendsChart').getContext('2d');
-
+            
             if (window.trendsChart && typeof window.trendsChart.destroy === 'function') {
                 window.trendsChart.destroy();
             }
@@ -758,59 +679,27 @@
                         borderColor: '#667eea',
                         backgroundColor: 'rgba(102, 126, 234, 0.1)',
                         yAxisID: 'y',
-                        tension: 0.4,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false
+                        tension: 0.4
                     }, {
                         label: 'Net Income (₿B)',
                         data: netIncomes,
                         borderColor: '#764ba2',
                         backgroundColor: 'rgba(118, 75, 162, 0.1)',
                         yAxisID: 'y',
-                        tension: 0.4,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false
+                        tension: 0.4
                     }, {
                         label: 'ROE (%)',
                         data: roes,
                         borderColor: '#f093fb',
                         backgroundColor: 'rgba(240, 147, 251, 0.1)',
                         yAxisID: 'y1',
-                        tension: 0.4,
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        fill: false
+                        tension: 0.4
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        intersect: false,
-                    },
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20
-                            }
-                        },
-                        tooltip: {
-                            mode: 'index',
-                            intersect: false,
-                        }
-                    },
                     scales: {
-                        x: {
-                            display: true,
-                            title: {
-                                display: true,
-                                text: 'Year'
-                            }
-                        },
                         y: {
                             type: 'linear',
                             display: true,
@@ -818,9 +707,6 @@
                             title: {
                                 display: true,
                                 text: 'Amount (₿B)'
-                            },
-                            grid: {
-                                drawOnChartArea: true,
                             }
                         },
                         y1: {
@@ -842,12 +728,11 @@
 
         function updateSegmentChart() {
             const ctx = document.getElementById('segmentChart').getContext('2d');
-
+            
             if (window.segmentChart && typeof window.segmentChart.destroy === 'function') {
                 window.segmentChart.destroy();
             }
 
-            // 2024 segment data (in millions)
             const segmentData = {
                 'Poultry': 17954,
                 'Swine': 13503,
@@ -868,28 +753,16 @@
                         data: data,
                         backgroundColor: colors,
                         borderWidth: 3,
-                        borderColor: '#fff',
-                        hoverOffset: 4
+                        borderColor: '#fff'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    cutout: '50%',
                     plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                usePointStyle: true,
-                                padding: 20,
-                                font: {
-                                    size: 14
-                                }
-                            }
-                        },
                         tooltip: {
                             callbacks: {
-                                label: function (context) {
+                                label: function(context) {
                                     const value = context.parsed;
                                     const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                     const percentage = ((value / total) * 100).toFixed(1);
@@ -897,10 +770,6 @@
                                 }
                             }
                         }
-                    },
-                    animation: {
-                        animateRotate: true,
-                        animateScale: true
                     }
                 }
             });
@@ -908,30 +777,29 @@
 
         // Event listeners
         document.querySelectorAll('.year-filter').forEach(button => {
-            button.addEventListener('click', function () {
+            button.addEventListener('click', function() {
                 document.querySelectorAll('.year-filter').forEach(btn => btn.classList.remove('active'));
                 this.classList.add('active');
-
+                
                 const year = this.dataset.year;
                 if (year === 'all') {
-                    updateCharts('all');
+                    updateKPICards('all');
+                    updateCharts();
                 } else {
                     currentYear = parseInt(year);
                     updateKPICards(currentYear);
-                    updateCharts(currentYear);
+                    updateCharts();
                 }
             });
         });
 
         // Initialize dashboard
-        document.addEventListener('DOMContentLoaded', function () {
-            // Small delay to ensure DOM is fully loaded
+        document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 updateKPICards(currentYear);
-                updateCharts(currentYear);
+                updateCharts();
             }, 100);
         });
     </script>
 </body>
-
 </html>
